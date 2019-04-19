@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>API холста</title>
+  <!--jQuery-->
+  <script src="js/jquery_003.js"></script>
+  <!-- Code highlighter -->
+  <script src="js/highlight.js"></script>
+  <link href="js/vs.css" rel="stylesheet" type="text/css"></link>
+  <script src="js/hljs.js"></script>
+</head>
+<body>
+
+<section id="canvasbox">
+  <canvas id="canvas" width="500" height="300">
+     В вашем браузере холст не поддерживается
+  </canvas>
+</section>
+
+<script id="painter">
+  var cnv = document.getElementById('canvas').getContext('2d');
+  cnv.save();
+  cnv.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height);
+  //Работа с изображениями
+  var img = new Image();
+  img.src = "snow.jpg";
+  //Загружаем изображение
+  img.addEventListener ("load", function(){
+    //Выводим изображение на холст, после завершения загрузки
+    cnv.drawImage(img,20,20)
+  }, false);
+  cnv.restore();
+</script>
+
+<footer>
+  <div id="info-div">
+В этом примере загружается изображение и выводится на холст. Поскольку холст способен принимать только заранее загруженные изображения, эту ситуацию необходимо контролировать, отслеживая событие <b>load</b>. Для этого добавляется прослушиватель и объявляется анонимная функция для обработки данного события. Метод <b>drawImage()</b> внутри функции выводит изображение на холст только после того, как его загрузка завершается.
+  </div>
+  <div id="code-div">
+    <pre>
+    <code id="script-code">
+    </code>
+    </pre>
+  </div>
+</footer>
+
+</body>
+</html>
