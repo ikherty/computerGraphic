@@ -19,23 +19,23 @@
 </section>
 
 <script id="painter">
-  var cnv = document.getElementById('canvas').getContext('2d');
-  cnv.save();
-  cnv.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height);
-  var img = new Image();
-  img.src = "ex1.jpg";
-  //img.addColorStop(0.3,"#0000FF");
-  img.addEventListener ("load", function(){
-    cnv.drawImage(img, 0, 0, cnv.canvas.width, cnv.canvas.height)
-  }, false);
-  cnv.restore();
-  img.onload = function() {
+
+var grad = cnv.createLinearGradient(0,0,10,130);
+  grad.addColorStop(0.3,"#0000FF");
+  grad.addColorStop(1,"#111144");
+  cnv.fillStyle=grad;
+  cnv.fillRect(150,10,200,100);
+
+
+var img = new Image();
+img.onload = function() {
     context.drawImage(img, 250, 30);
     var pattern = context.createPattern(img, "repeat");
     context.fillStyle = pattern; 
     context.rect(0, 0, canvas.width, canvas.height);
     context.fill();
 };
+img.src = "ex1.jpg";
 </script>
 
 
