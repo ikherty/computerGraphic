@@ -13,7 +13,7 @@
 <body>
 
 <section id="canvasbox">
-  <canvas id="canvas" width="500" height="300">
+  <canvas id="canvas" width="300" height="300">
      В вашем браузере холст не поддерживается
   </canvas>
 </section>
@@ -24,7 +24,7 @@ cnv.save();
 cnv.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height);
 
 var img = new Image();
-  img.src = 'https://rostov-na-donu.el43.ru/lyustri/a0594936f572d14b6fde439d55dc345a.jpeg';
+  img.src = 'https://pp.userapi.com/c849528/v849528343/164ea0/sM_aA4ClrS8.jpg';
   img.addEventListener ("load", function(){
   cnv.drawImage(img, 10, 10, 150, 150)
   cnv.fillStyle = "rgba(0, 0, 200, 0.5)";

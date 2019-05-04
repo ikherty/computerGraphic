@@ -19,31 +19,19 @@
 </section>
 
 <script id="painter">
-  var cnv = document.getElementById('canvas').getContext('2d');
-  cnv.save();
-  cnv.clearRect(0, 0, cnv.canvas.width, cnv.canvas.height);
-  //Работа с изображениями
-  var img = new Image();
-  img.src = "snow.jpg";
-  //Загружаем изображение
-  img.addEventListener ("load", function(){
-    //Выводим изображение на холст, после завершения загрузки
-    cnv.drawImage(img,20,20)
-  }, false);
-  cnv.restore();
-</script>
+var cnv = document.getElementById('canvas').getContext('2d');
 
-<footer>
-  <div id="info-div">
-В этом примере загружается изображение и выводится на холст. Поскольку холст способен принимать только заранее загруженные изображения, эту ситуацию необходимо контролировать, отслеживая событие <b>load</b>. Для этого добавляется прослушиватель и объявляется анонимная функция для обработки данного события. Метод <b>drawImage()</b> внутри функции выводит изображение на холст только после того, как его загрузка завершается.
-  </div>
-  <div id="code-div">
-    <pre>
-    <code id="script-code">
-    </code>
-    </pre>
-  </div>
-</footer>
+var img = new Image();
+img.src = 'https://rostov-na-donu.el43.ru/lyustri/a0594936f572d14b6fde439d55dc345a.jpeg';
+img.addEventListener("load", function(){
+  cnv.drawImage(img, 0, 0, 150, 150)
+  var grad = cnv.createLinearGradient(0,0,150,150);
+  grad.addColorStop(0,"rgba(0, 0, 0, 0.5)");
+  grad.addColorStop(1,"rgba(255, 255, 255, 0.5)");
+  cnv.fillStyle=grad;
+  cnv.fillRect(0, 0, 150, 150);
+}, false);
+</script>
 
 </body>
 </html>
