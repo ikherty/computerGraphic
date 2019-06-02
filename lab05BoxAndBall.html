@@ -1,150 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
+		<title>three.js webgl - mirror</title>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="main.css">
+		<style>
+			body {
+				color: #444;
+			}
+			a {
+				color: #08f;
+			}
+		</style>
 	</head>
 	<body>
+
+		<div id="container"></div>
+		<div id="info"><a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - mirror
+		</div>
+
 		<script src="three.js"></script>
-		<script src="WebVR.js"></script>
-		<script src="BoxLineGeometry.js"></script>
-    <script>
+		<script src="Reflector.js"></script>
+		<script src="OrbitControls.js"></script>
+
+		<script>
+			// scene size
+			var WIDTH = window.innerWidth;
+			var HEIGHT = window.innerHeight;
+			// camera
+			var VIEW_ANGLE = 45;
+			var ASPECT = WIDTH / HEIGHT;
+			var NEAR = 1;
+			var FAR = 500;
 			var camera, scene, renderer;
-			var controller1, controller2;
-			var room;
-			var count = 0;
-			var radius = 0.1;
-			var normal = new THREE.Vector3();
-			var relativeVelocity = new THREE.Vector3();
+			var cameraControls;
+			var sphereGroup, smallSphere;
 			var clock = new THREE.Clock();
 			init();
 			animate();
 			function init() {
-				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x98FB98 );
-				camera = new THREE.PerspectiveCamera( 140, window.innerWidth / window.innerHeight, 0.1, 10 );
-				room = new THREE.LineSegments(
-					new THREE.BoxLineGeometry( 15, 10, 8, 1, 1, 0),//размер коробки
-					new THREE.LineBasicMaterial( { color: 0x000000 } )
-				);
-				room.geometry.translate( 0, 1, -6 );//расстояние для обзора
-				scene.add( room );
-				var light = new THREE.HemisphereLight( 0xffffff, 0x444444 );
-				light.position.set( 1, 1, 1 );
-				scene.add( light );
-				var geometry = new THREE.IcosahedronBufferGeometry( radius, 2 );
-//				for ( var i = 0; i < 1; i ++ ) {
-                var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
-                object.position.x = Math.random() * 4 - 2;
-                //object.position.y = Math.random() * 4;
-                object.position.z = Math.random() ;
-                object.position.x = 2;
-                //object.position.y = 0;
-                object.position.z = -10;
-                object.userData.velocity = new THREE.Vector3();
-                object.userData.velocity.x = Math.random() * 0.01 - 0.005;
-                //object.userData.velocity.y = Math.random() * 0.01 - 0.005;
-                object.userData.velocity.z = Math.random() * 0.01 - 0.005;
-                object.userData.velocity.x = -1.01 - 0.005;
-                //object.userData.velocity.y = 0.01 - 0.005;
-                object.userData.velocity.z = -1.01 - 0.005;
-                room.add( object );
-//				}
-				//
+				var container = document.getElementById( 'container' );
+				// renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				renderer.vr.enabled = true;
-				document.body.appendChild( renderer.domElement );
+				renderer.setSize( WIDTH, HEIGHT );
+				container.appendChild( renderer.domElement );
+				// scene
+				scene = new THREE.Scene();
+				// camera
+				camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+				camera.position.set( 0, 75, 160 );
+				cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+				cameraControls.target.set( 0, 40, 0 );
+				cameraControls.maxDistance = 400;
+				cameraControls.minDistance = 10;
+				cameraControls.update();
 				//
-	//			document.body.appendChild( WEBVR.createButton( renderer ) );
-				// controllers
+				var planeGeo = new THREE.PlaneBufferGeometry( 100.1, 100.1 );
+				var planeGeo1 = new THREE.PlaneBufferGeometry( 100, 20 );
+				// reflectors/mirrors
+				var geometry = new THREE.CircleBufferGeometry( 40, 64 );
+				var geometry = new THREE.PlaneBufferGeometry( 100, 100 );
+				sphereGroup = new THREE.Object3D();
+				scene.add( sphereGroup );
 				
-				function onSelectStart() {
-					this.userData.isSelecting = true;
-				}
-				function onSelectEnd() {
-					this.userData.isSelecting = false;
-				}
-				controller1 = renderer.vr.getController( 0 );
-				controller1.addEventListener( 'selectstart', onSelectStart );
-				controller1.addEventListener( 'selectend', onSelectEnd );
-				scene.add( controller1 );
-				controller2 = renderer.vr.getController( 1 );
-				controller2.addEventListener( 'selectstart', onSelectStart );
-				controller2.addEventListener( 'selectend', onSelectEnd );
-				scene.add( controller2 );
-				// helpers
-				var geometry = new THREE.BufferGeometry();
-				geometry.addAttribute( 'position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 0, 0, - 1 ], 3 ) );
-				geometry.addAttribute( 'color', new THREE.Float32BufferAttribute( [ 0.5, 0.5, 0.5, 0, 0, 0 ], 3 ) );
-				var material = new THREE.LineBasicMaterial( { vertexColors: true, blending: THREE.AdditiveBlending } );
-				controller1.add( new THREE.Line( geometry, material ) );
-				controller2.add( new THREE.Line( geometry, material ) );
-				//
-				window.addEventListener( 'resize', onWindowResize, false );
+				var geometry = new THREE.CylinderBufferGeometry( 0.1, 15 * Math.cos( Math.PI / 180 * 30 ), 0.1, 24, 1 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xffffff, emissive: 0x444444 } );
+				var geometry = new THREE.SphereBufferGeometry( 15, 24, 24, Math.PI / 2, Math.PI * 2, 0, Math.PI / 180 * 120 );
+				var geometry = new THREE.IcosahedronBufferGeometry( 5, 1 );
+				var material = new THREE.MeshPhongMaterial( { color: 0xffffff, emissive: 0x333333, flatShading: true } );
+				var geometry = new THREE.SphereBufferGeometry( 2, 100 ,100);
+				smallSphere = new THREE.Mesh( geometry, material );
+				smallSphere.position.y = 2;
+                smallSphere.userData.velocity = new THREE.Vector2();
+                smallSphere.userData.velocity.x = Math.random() * 190.01 - 0.005;
+                smallSphere.userData.velocity.z = Math.random() * 120.01 - 0.005;
+				scene.add( smallSphere );
+				// walls
+				var planeBottom = new THREE.Mesh( planeGeo, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeBottom.rotateX( - Math.PI / 2 );
+				scene.add( planeBottom );
+				var planeFront = new THREE.Mesh( planeGeo1, new THREE.MeshPhongMaterial( { color: 0x7f7fff } ) );
+				planeFront.position.z = 50;
+				planeFront.position.y = 10;
+				planeFront.rotateY( Math.PI );
+				scene.add( planeFront );
+				var planeBack = new THREE.Mesh( planeGeo1, new THREE.MeshPhongMaterial( { color: 0xffffff } ) );
+				planeBack.position.z = -50;
+				planeBack.position.y = 10;
+				planeBack.rotateY( -Math.PI );
+				scene.add( planeBack );
+				var planeRight = new THREE.Mesh( planeGeo1, new THREE.MeshPhongMaterial( { color: 0x00ff00 } ) );
+				planeRight.position.x = 50;
+				planeRight.position.y = 10;
+				planeRight.rotateY( - Math.PI / 2 );
+				scene.add( planeRight );
+				var planeLeft = new THREE.Mesh( planeGeo1, new THREE.MeshPhongMaterial( { color: 0xff0000 } ) );
+				planeLeft.position.x = - 50;
+				planeLeft.position.y = 10;
+				planeLeft.rotateY( Math.PI / 2 );
+				scene.add( planeLeft );
+				// lights
+				var mainLight = new THREE.PointLight( 0xcccccc, 1.5, 250 );
+				mainLight.position.y = 30;
+				scene.add( mainLight );
+				var greenLight = new THREE.PointLight( 0x00ff00, 0.25, 1000 );
+				greenLight.position.set( 550, 50, 0 );
+				scene.add( greenLight );
+				var redLight = new THREE.PointLight( 0xff0000, 0.25, 1000 );
+				redLight.position.set( - 550, 50, 0 );
+				scene.add( redLight );
+				var blueLight = new THREE.PointLight( 0x7f7fff, 0.25, 1000 );
+				blueLight.position.set( 0, 50, 550 );
+				scene.add( blueLight );
+				var bLight = new THREE.PointLight( 0xffffff, 0.25, 1000 );
+				bLight.position.set( 0, 50, -550 );
+				scene.add( bLight );
 			}
-			function onWindowResize() {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
-			function handleController( controller ) {
-				if ( controller.userData.isSelecting ) {
-					var object = room.children[ count ++ ];
-					object.position.copy( controller.position );
-					object.userData.velocity.x = ( Math.random() - 0.5 ) * 3;
-					//object.userData.velocity.y = ( Math.random() - 0.5 ) * 3;
-					object.userData.velocity.z = ( Math.random() - 9 );
-					object.userData.velocity.applyQuaternion( controller.quaternion );
-					if ( count === room.children.length ) count = 0;
-				}
-			}
-			//
 			function animate() {
-				renderer.setAnimationLoop( render );
+                renderer.setAnimationLoop( render );
 			}
-			function render() {
-				handleController( controller1 );
-				handleController( controller2 );
-				//
-				var delta = clock.getDelta() * 0.8; // slow down simulation
-				var range = 3 - radius;
-				for ( var i = 0; i < room.children.length; i ++ ) {
-					var object = room.children[ i ];
-					object.position.x += object.userData.velocity.x * delta;
-					//object.position.y += object.userData.velocity.y * delta;
-					object.position.z += object.userData.velocity.z * delta;
-					// keep objects inside room
-					if ( object.position.x < - range || object.position.x > range ) {
-						object.position.x = THREE.Math.clamp( object.position.x, - range, range );
-						object.userData.velocity.x = - object.userData.velocity.x;
-					}
-            
-					if ( object.position.z < -range || object.position.z > range ) {
-						object.position.z = THREE.Math.clamp( object.position.z, - range, range );
-						object.userData.velocity.z = - object.userData.velocity.z;
-					}
-					for ( var j = i + 1; j < room.children.length; j ++ ) {
-						var object2 = room.children[ j ];
-						normal.copy( object.position ).sub( object2.position );
-						var distance = normal.length();
-						if ( distance < 3 * radius ) {
-							normal.multiplyScalar( 0.1 * distance - radius );
-							object.position.sub( normal );
-							object2.position.add( normal );
-							normal.normalize();
-							relativeVelocity.copy( object.userData.velocity ).sub( object2.userData.velocity );
-							normal = normal.multiplyScalar( relativeVelocity.dot( normal ) );
-							object.userData.velocity.sub( normal );
-							object2.userData.velocity.add( normal );
-						}
-					}
-					//object.userData.velocity.y -= 9.8 * delta;
-				}
+			function render(){
+                move();
 				renderer.render( scene, camera );
 			}
+			function move(){
+			var range = 100;
+			var radius = 2;
+			var delta = clock.getDelta() ;
+            smallSphere.position.x += smallSphere.userData.velocity.x * delta;
+            smallSphere.position.z += smallSphere.userData.velocity.z * delta;
+            if ( smallSphere.position.x < - (range/2 - radius)|| smallSphere.position.x > range/2 + radius) {
+						smallSphere.position.x = THREE.Math.clamp( smallSphere.position.x, - 50, 50 );
+						smallSphere.userData.velocity.x = - smallSphere.userData.velocity.x;
+            }
+            if ( smallSphere.position.z < - (range/2 - radius)|| smallSphere.position.z > range/2 + radius ) {
+                smallSphere.position.z = THREE.Math.clamp( smallSphere.position.z, - 50, 50 );
+                smallSphere.userData.velocity.z = - smallSphere.userData.velocity.z;
+            }
+			}			
 		</script>
 	</body>
 </html>
